@@ -8,7 +8,6 @@ add_subdirectory(common)
 # initialize KEM|SIG_OBJS for --warn-uninitialized
 set(KEM_OBJS "")
 set(SIG_OBJS "")
-set(SIG_STFL_OBJS "")
 
 if(${OQS_ENABLE_KEM_BIKE})
     add_subdirectory(kem/bike)
@@ -57,22 +56,10 @@ if(OQS_ENABLE_SIG_SPHINCS)
 endif()
 ##### OQS_COPY_FROM_UPSTREAM_FRAGMENT_ADD_ALG_OBJECTS_END
 
-if(OQS_ENABLE_SIG_STFL_XMSS)
-    add_subdirectory(sig_stfl/xmss)
-    set(SIG_STFL_OBJS ${SIG_STFL_OBJS} ${XMSS_OBJS})
-endif()
-
-if(OQS_ENABLE_SIG_STFL_LMS)
-    add_subdirectory(sig_stfl/lms)
-    set(SIG_STFL_OBJS ${SIG_STFL_OBJS} ${LMS_OBJS})
-endif()
-
 add_library(oqs kem/kem.c
                 ${KEM_OBJS}
                 sig/sig.c
                 ${SIG_OBJS}
-                sig_stfl/sig_stfl.c
-                ${SIG_STFL_OBJS}
                 ${COMMON_OBJS})
 
 # Internal library to be used only by test programs
@@ -83,13 +70,8 @@ if(DEFINED SANITIZER_LD_FLAGS)
     target_link_libraries(oqs-internal PUBLIC ${SANITIZER_LD_FLAGS})
 endif()
 if(${OQS_USE_OPENSSL})
-  if(${OQS_DLOPEN_OPENSSL})
-    target_link_libraries(oqs PRIVATE ${CMAKE_DL_LIBS})
-    target_link_libraries(oqs-internal PRIVATE ${CMAKE_DL_LIBS})
-  else()
     target_link_libraries(oqs PRIVATE ${OPENSSL_CRYPTO_LIBRARY})
     target_link_libraries(oqs-internal PRIVATE ${OPENSSL_CRYPTO_LIBRARY})
-  endif()
 endif()
 
 target_include_directories(oqs

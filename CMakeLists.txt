@@ -18,6 +18,7 @@ if(POLICY CMP0067)
     cmake_policy(SET CMP0067 NEW)
 endif()
 
+
 project(liboqs C ASM)
 
 option(OQS_DIST_BUILD "Build distributable library with optimized code for several CPU microarchitectures. Enables run-time CPU feature detection." ON)
@@ -33,7 +34,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(OQS_VERSION_TEXT "0.10.1-dev")
+set(OQS_VERSION_TEXT "0.10.0")
 set(OQS_COMPILE_BUILD_TARGET "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_HOST_SYSTEM}")
 set(OQS_MINIMAL_GCC_VERSION "7.1.0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -113,7 +114,7 @@ endif()
 
 option(OQS_SPEED_USE_ARM_PMU "Use ARM Performance Monitor Unit during benchmarking" OFF)
 
-if(WIN32 AND NOT (MINGW OR MSYS OR CYGWIN))
+if(WIN32)
     set(CMAKE_GENERATOR_CC cl)
 endif()
 
@@ -133,28 +134,13 @@ if(${OQS_USE_OPENSSL})
         endif()
     endif()
     find_package(OpenSSL 1.1.1 REQUIRED)
-
-    if(OQS_DLOPEN_OPENSSL)
-      find_program(OBJDUMP objdump)
-      if(NOT OBJDUMP)
-	message(FATAL_ERROR "objdump not found. Please install it from binutils.")
-      endif()
-      execute_process(
-	COMMAND ${OBJDUMP} -p ${OPENSSL_CRYPTO_LIBRARY}
-	COMMAND sed -n "s/[ 	]\\{1,\\}SONAME[ 	]\\{1,\\}//p"
-	OUTPUT_VARIABLE OQS_OPENSSL_CRYPTO_SONAME
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-	COMMAND_ERROR_IS_FATAL ANY)
-      message(STATUS "OpenSSL dlopen SONAME: " ${OQS_OPENSSL_CRYPTO_SONAME})
-    endif()
 endif()
 
 set(PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/src/oqs.h
                    ${PROJECT_SOURCE_DIR}/src/common/common.h
                    ${PROJECT_SOURCE_DIR}/src/common/rand/rand.h
                    ${PROJECT_SOURCE_DIR}/src/kem/kem.h
-                   ${PROJECT_SOURCE_DIR}/src/sig/sig.h
-                   ${PROJECT_SOURCE_DIR}/src/sig_stfl/sig_stfl.h)
+                   ${PROJECT_SOURCE_DIR}/src/sig/sig.h)
 
 set(INTERNAL_HEADERS ${PROJECT_SOURCE_DIR}/src/common/aes/aes.h
                      ${PROJECT_SOURCE_DIR}/src/common/rand/rand_nist.h
@@ -197,12 +183,6 @@ if(OQS_ENABLE_SIG_SPHINCS)
     set(PUBLIC_HEADERS ${PUBLIC_HEADERS} ${PROJECT_SOURCE_DIR}/src/sig/sphincs/sig_sphincs.h)
 endif()
 ##### OQS_COPY_FROM_UPSTREAM_FRAGMENT_INCLUDE_HEADERS_END
-if(OQS_ENABLE_SIG_STFL_XMSS)
-    set(PUBLIC_HEADERS ${PUBLIC_HEADERS} ${PROJECT_SOURCE_DIR}/src/sig_stfl/xmss/sig_stfl_xmss.h)
-endif()
-if(OQS_ENABLE_SIG_STFL_LMS)
-    set(PUBLIC_HEADERS ${PUBLIC_HEADERS} ${PROJECT_SOURCE_DIR}/src/sig_stfl/lms/sig_stfl_lms.h)
-endif()
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/include/oqs)
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${PUBLIC_HEADERS} ${PROJECT_BINARY_DIR}/include/oqs)
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${INTERNAL_HEADERS} ${PROJECT_BINARY_DIR}/include/oqs)

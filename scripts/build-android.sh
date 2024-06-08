@@ -6,13 +6,12 @@ set -e
 
 show_help() {
     echo ""
-    echo " Usage: ./build-android <ndk-dir> -a [abi] -b [build-directory] -s [sdk-version] -f [extra-cmake-flags]"
+    echo " Usage: ./build-android <ndk-dir> -a [abi] -b [build-directory] -s [sdk-version]"
 
     echo "   ndk-dir: the directory of the Android NDK (required)"
     echo "   abi: the Android ABI to target for the build"
     echo "   build-directory: the directory in which to build the project"
     echo "   sdk-version: the minimum Android SDK version to target"
-    echo "   extra-cmake-flags: extra flags to use for CMake configuration"
     echo ""
     exit 0
 }
@@ -53,13 +52,12 @@ MINSDKVERSION=21
 BUILDDIR="build"
 
 OPTIND=2
-while getopts "a:s:b:f:" flag
+while getopts "a:s:b:" flag
 do
     case $flag in
         a) ABI=$OPTARG;;
         s) MINSDKVERSION=$OPTARG;;
         b) BUILDDIR=$OPTARG;;
-        f) EXTRAFLAGS="$OPTARG";;
         *) exit 1
     esac
 done
@@ -109,8 +107,7 @@ cmake .. -DOQS_USE_OPENSSL=OFF \
          -DBUILD_SHARED_LIBS=ON  \
          -DCMAKE_TOOLCHAIN_FILE="$NDK"/build/cmake/android.toolchain.cmake \
          -DANDROID_ABI="$ABI" \
-         -DANDROID_NATIVE_API_LEVEL="$MINSDKVERSION" \
-         $EXTRAFLAGS
+         -DANDROID_NATIVE_API_LEVEL="$MINSDKVERSION"
 cmake --build ./
 
 # Provide rudimentary information following build
